@@ -6,7 +6,7 @@ this가 무엇인지 대답하라고 할 때 보통 상황마다 다른 this를 
 
 "그래서 this가 뭔데요?"
 
-**this는 실행 컨텍스트가 활성화 되는 시점에서 설정된다. this는 특정 context 객체를 가리킨다. 그런데 이놈은 상황마다 다르다.**
+**this는 그것이 속한 특정 context 객체를 가리킨다. 그런데 이놈은 상황마다 다르다.**
 
 콘텍스트(context) 객체는 this가 바라보고 있는 어떤 객체이다.
 
@@ -48,19 +48,19 @@ this.a; // 1
 - 메서드에서의 this : 호출한 객체
 
 ```javascript
-var func = function (x) {
-  console.log(this, x);
+var func = function () {
+  console.log(this);
 };
 
 (function () {
-  func(1);
+  func();
 })(); // 즉시 실행함수로 실행해도, 다른 함수에서 a를 호출해도 a의 this는 Window, global이다.
 
 var obj = {
   method: func,
 };
 
-obj.method(2); // method를 가리킨다.
+obj.method(); // obj를 가리킨다.
 ```
 
 ## call, apply, bind
@@ -86,7 +86,11 @@ func.bind(this, `param1`, `param2`);
 
 ## arrow function
 
-화살표 함수는 this를 binding 하지 않고 상위 스코프의 this를 그대로 활용할 수 있다.
+화살표 함수는 자신의 this가 없다.
+
+화살표 함수는 함수를 선언할 때 this에 바인딩할 객체가 정적으로 결정되며, 화살표 함수를 둘러싸는 렉시컬 스코프(lexical scope)의 this가 사용된다.
+
+또한 call, apply, bind를 사용해 명시적으로 this를 bind하더라도 무시한다.
 
 ```javascript
 var obj = {
@@ -101,6 +105,24 @@ var obj = {
 };
 
 obj.outer(); // this1과 this2는 동일하다.
+```
+
+```javascript
+var name = "outer";
+const arrowObj = {
+  name: "object",
+  func: () => console.log(`${this.name} function`),
+};
+
+const funcObj = {
+  name: "object",
+  func: function () {
+    console.log(`${this.name} function`);
+  },
+};
+
+arrowObj.func(); // outer function
+funcObj.func(); // object function
 ```
 
 ## new
@@ -134,7 +156,7 @@ setTimeout(function () {
 });
 
 // eventListener에서 this는 event.target이다.
-document.body.innerHTML += `<button id="a">클릭</button>`;
+// <button id="a">클릭</button>
 document.body.querySelector("#a").addEventListener("click", function (e) {
   console.log(this); // button
 });
