@@ -161,3 +161,274 @@ document.body.querySelector("#a").addEventListener("click", function (e) {
   console.log(this); // button
 });
 ```
+
+## 실전 문제들
+
+[7 Interview Questions on "this" keyword in JavaScript. Can You Answer Them?](https://dmitripavlutin.com/javascript-this-interview-questions/)
+
+### Variable vs property
+
+```javascript
+const object = {
+  message: "Hello, World!",
+
+  getMessage() {
+    const message = "Hello, Earth!";
+    return this.message;
+  },
+};
+
+console.log(object.getMessage()); // What is logged?
+```
+
+getMessage는 object의 메소드이다. 이 경우 this는 호출한 객체를 나타내므로 `Hello, World!`가 출력된다.
+
+### Cat name
+
+```javascript
+function Pet(name) {
+  this.name = name;
+
+  this.getName = () => this.name;
+}
+
+const cat = new Pet("Fluffy");
+
+console.log(cat.getName()); // What is logged?
+
+const { getName } = cat;
+console.log(getName()); // What is logged?
+```
+
+첫번째의 경우 object의 메소드로 호출했다. 따라서 `Fluffy`가 출력된다.
+
+두번째의 경우 object의 메소드를 함수로 추출해서 실행했다.
+
+이 때 getName은 arrow function이므로 렉시컬 스코프의 this를 기억한다.
+
+따라서 위와 같이 this는 Pet이다. 따라서 `Fluffy`가 출력된다.
+
+만약 getName이 arrow function이 아닌 일반 함수일 경우에 getName을 추출해서 사용할 경우 this는 전역객체이다.
+
+전역객체에서 name은 선언되지 않았으므로 undefined이다. 따라서 `undefined`가 출력된다.
+
+### Delayed greeting
+
+```javascript
+const object = {
+  message: "Hello, World!",
+
+  logMessage() {
+    console.log(this.message); // What is logged?
+  },
+};
+
+setTimeout(object.logMessage, 1000);
+```
+
+object의 메소드에서 this는 자기 자신이다.
+
+그러나 우리는 setTimeout의 callback으로 object의 메소드를 인자로 넣었다.
+
+따라서 이 함수는 메소드가 아닌 일반 함수로 동작한다.
+
+이 일반 함수는 arrow function이 아니기 때문에 렉시컬 스코프를 기억하지 못하고 따라서 this는 전역객체가 된다.
+
+따라서 `undefined`가 출력된다.
+
+만약 arrow function인 경우에는 어떻게될까?
+
+이는 객체에서 프로퍼티에 arrow function 함수를 할당하는 형태가 된다.
+
+```javascript
+var message = "new world";
+
+const object = {
+  message: "Hello, World!",
+
+  logMessage() {
+    console.log(this.message); // What is logged?
+  },
+
+  logMessageArrow: () => {
+    console.log(this.message); // What is logged?
+  },
+};
+
+object.logMessage(); // 'Hello, World!'
+object.logMessageArrow(); // 'new world'
+
+setTimeout(object.logMessage, 1000); // 'new world'
+setTimeout(object.logMessageArrow, 1000); // 'new world'
+```
+
+이 경우 arrow function는 자신의 this를 가지고 있지 않다. 따라서 이 this는 전역 객체가 된다.
+
+따라서 위 경우는 다음과 같이 출력된다. 객체의 프로퍼티로 arrow function을 할당하는 경우에는 무조건 전역 객체가 this이기 때문이다. 이는 callback으로 사용될 때도 어차피 전역이므로 동일하다.
+
+함수 단위 스코프를 이용하는 경우는 다음과 같다.
+
+```javascript
+var foo = "foo";
+
+function hello() {
+  const object = {
+    message: "Hello, World!",
+    foo: "bar",
+
+    logMessage() {
+      console.log("method", this.foo, this.message);
+    },
+
+    logMessageArrow: () => {
+      console.log("arrow", this.foo, this.message);
+    },
+  };
+
+  object.logMessage(); // 'method' 'bar' 'Hello, World!'
+  object.logMessageArrow(); // 'arrow' 'foo' undefined
+
+  setTimeout(object.logMessage, 1000); // 'method' 'foo' undefined
+  setTimeout(object.logMessageArrow, 1000); // 'arrow' 'foo' undefined
+}
+
+hello();
+```
+
+class와 new 키워드를 사용하는 경우는 callback으로 메소드를 사용할 때 다음과 같다.
+
+여기서 arrow function의 경우 렉시컬 스코프를 기억하기 때문이다.
+
+```javascript
+class Object {
+  constructor(message) {
+    this.message = message;
+    this.logMessage = function () {
+      console.log("method", this.message);
+    };
+    this.logMessageArrow = () => {
+      console.log("arrow", this.message);
+    };
+  }
+}
+
+const object = new Object("Hello, World!");
+
+setTimeout(object.logMessage, 1000); // 'method' undefined
+setTimeout(object.logMessageArrow, 1000); // 'arrow' 'Hello, World!'
+```
+
+### Artificial method
+
+```javascript
+const object = {
+  message: "Hello, World!",
+};
+
+function logMessage() {
+  console.log(this.message); // "Hello, World!"
+}
+
+// Write your code here...
+```
+
+this를 강제로 바인딩 하는 문제이다.
+
+bind, apply, call 등을 이용해 강제로 바인딩을 할 수 있다.
+
+혹은 object의 메소드로 지정한 후 호출해 사용할 수 있다.
+
+```javascript
+object.logMessage = logMessage;
+object.logMessage();
+
+// Using func.call() method
+logMessage.call(object);
+
+// Using func.apply() method
+logMessage.apply(object);
+
+// Creating a bound function
+const boundLogMessage = logMessage.bind(object);
+boundLogMessage();
+```
+
+### Greeting and farewell
+
+```javascript
+const object = {
+  who: "World",
+
+  greet() {
+    return `Hello, ${this.who}!`;
+  },
+
+  farewell: () => {
+    return `Goodbye, ${this.who}!`;
+  },
+};
+
+console.log(object.greet()); // What is logged?
+console.log(object.farewell()); // What is logged?
+```
+
+이 경우에 arrow function의 this는 전역객체이다.
+
+따라서 greet의 경우에는 `Hello, World!`가, farewell의 경우에는 `Goodbye, undefined!`가 출력된다.
+
+### Tricky length
+
+```javascript
+var length = 4;
+function callback() {
+  console.log(this.length); // What is logged?
+}
+
+const object = {
+  length: 5,
+  method(callback) {
+    callback();
+  },
+};
+
+object.method(callback, 1, 2);
+```
+
+object.method에 인자로 넣은 callback을 실행했다.
+
+callback이 인자로 실행되므로 여기서 this는 전역객체이다. 따라서 `4`가 출력된다.
+
+### Calling arguments
+
+```javascript
+var length = 4;
+function callback() {
+  console.log(this.length); // What is logged?
+}
+
+const object = {
+  length: 5,
+  method() {
+    arguments[0]();
+  },
+};
+
+object.method(callback, 1, 2);
+```
+
+이 경우 method에서 argument는 특수한 변수이며 다음과 같다.
+
+```javascript
+{
+  0: callback,
+  1: 1,
+  2: 2,
+  length: 3
+}
+```
+
+여기서 arguments[0]의 callback을 호출할 경우 이 callback은 arguments의 메소드처럼 동작한다.
+
+따라서 이 경우 this는 arguments를 나타내므로 arguments의 길이인 `3`이 출력된다.
+
+(object.method에 인자로 값을 3개 넣었으므로)
