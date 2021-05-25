@@ -6,7 +6,9 @@ this가 무엇인지 대답하라고 할 때 보통 상황마다 다른 this를 
 
 "그래서 this가 뭔데요?"
 
-**this는 그것이 속한 특정 context 객체를 가리킨다. 그런데 이놈은 상황마다 다르다.**
+**this는 현재 실행 문맥이다. 그런데 이놈은 상황마다 다르다.**
+
+실행문맥이란 말은 호출자가 누구인지와 같다.
 
 콘텍스트(context) 객체는 this가 바라보고 있는 어떤 객체이다.
 
@@ -21,7 +23,9 @@ this가 변하는 상황을 먼저 나열해보자
 - new
 - callback
 
-이제부터 정리해보자
+상황에 따른 this를 정리해보자
+
+---
 
 ## global scope
 
@@ -63,6 +67,25 @@ var obj = {
 obj.method(); // obj를 가리킨다.
 ```
 
+아래의 경우를 살펴보자
+
+```javascript
+const testObj = {
+  outerFunc: function () {
+    console.log(this); // outerFunc
+
+    function innerFunc() {
+      console.log(this); // Window
+    }
+    innerFunc();
+  },
+};
+
+testObj.outerFunc();
+```
+
+outerFunc 내부의 innerFunc에서 this는 전역 객체가 된다. 이는 callback에서 더 자세히 다룬다.
+
 ## call, apply, bind
 
 함수에 명시적으로 this를 바인딩 할 수 있다.
@@ -85,8 +108,6 @@ func.bind(this, `param1`, `param2`);
 ```
 
 ## arrow function
-
-화살표 함수는 자신의 this가 없다.
 
 화살표 함수는 함수를 선언할 때 this에 바인딩할 객체가 정적으로 결정되며, 화살표 함수를 둘러싸는 렉시컬 스코프(lexical scope)의 this가 사용된다.
 
@@ -138,11 +159,13 @@ var Obj = function (name, age) {
 var obj = new Obj("나비", 1); // {name:"나비", age:1}
 ```
 
-## callback
+## callback (서브루틴)
 
 콜백함수의 제어권을 가지는 함수(메서드)마다 다르다
 
 제어권을 가지는 함수가 콜백 함수에서 this를 무엇으로 할지 결정하기 때문이다.
+
+일반적으로는 호출한 객체의 this를 bind하지 않으므로, bind 되지 않았기 때문에 실행문맥이 전역 객체가 된다.
 
 ```javascript
 // setTimeout의 this는 Window, Global이다.
@@ -161,6 +184,29 @@ document.body.querySelector("#a").addEventListener("click", function (e) {
   console.log(this); // button
 });
 ```
+
+앞서 object의 method에서 예시로 들었던 코드를 다시 살펴보자
+
+```javascript
+const testObj = {
+  outerFunc: function () {
+    console.log(this); // outerFunc
+
+    function innerFunc() {
+      console.log(this); // Window
+    }
+    innerFunc();
+  },
+};
+
+testObj.outerFunc();
+```
+
+여기서 innerFunc는 callback과 마찬가지로 outerFunc 내부에서 innerFunc가 호출할때는 그 어떤 문맥도 지정하지 않았다.
+
+따라서 서브루틴 내에서 바깥의 this 를 사용하려고 할때는 arrow function 을 이용해 원하는 this를 사용할 수 있다.
+
+---
 
 ## 실전 문제들
 
@@ -432,3 +478,9 @@ object.method(callback, 1, 2);
 따라서 이 경우 this는 arguments를 나타내므로 arguments의 길이인 `3`이 출력된다.
 
 (object.method에 인자로 값을 3개 넣었으므로)
+
+---
+
+출처
+
+- [[javascript] this는 어렵지 않습니다.](https://blueshw.github.io/2018/03/12/this/)
