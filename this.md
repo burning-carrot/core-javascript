@@ -2,6 +2,26 @@
 
 > Javascript에서 this는 무엇인가?
 
+[Table of Contents]
+
+- [상황에 따른 this](#상황에-따른-this)
+  - [global scope](#global-scope)
+  - [Object's method](#objects-method)
+  - [call, apply, bind](#call-apply-bind)
+  - [arrow function](#arrow-function)
+  - [new](#new)
+  - [callback (서브루틴)](#callback-서브루틴)
+- [실전 문제들](#실전-문제들)
+  - [Variable vs property](#variable-vs-property)
+  - [Cat name](#cat-name)
+  - [Delayed greeting](#delayed-greeting)
+  - [Artificial method](#artificial-method)
+  - [Greeting and farewell](#greeting-and-farewell)
+  - [Tricky length](#tricky-length)
+  - [Calling arguments](#calling-arguments)
+
+---
+
 this가 무엇인지 대답하라고 할 때 보통 상황마다 다른 this를 대답하곤 한다.
 
 "그래서 this가 뭔데요?"
@@ -10,9 +30,7 @@ this가 무엇인지 대답하라고 할 때 보통 상황마다 다른 this를 
 
 실행문맥이란 말은 호출자가 누구인지와 같다.
 
-콘텍스트(context) 객체는 this가 바라보고 있는 어떤 객체이다.
-
-그렇다면 역으로 this는 context를 가리키는 객체이다.
+콘텍스트(context) 객체는 this가 바라보고 있는 어떤 객체이며 반대로 표현하면 this는 context를 가리키는 것이다.
 
 this가 변하는 상황을 먼저 나열해보자
 
@@ -27,7 +45,9 @@ this가 변하는 상황을 먼저 나열해보자
 
 ---
 
-## global scope
+## 상황에 따른 this
+
+### global scope
 
 전역공간에서의 this는 전역객체를 가리킨다.
 
@@ -42,7 +62,7 @@ var a = 1;
 this.a; // 1
 ```
 
-## Object's method
+### Object's method
 
 함수는 자체로 독립적인 기능을 수행
 
@@ -86,7 +106,7 @@ testObj.outerFunc();
 
 outerFunc 내부의 innerFunc에서 this는 전역 객체가 된다. 이는 callback에서 더 자세히 다룬다.
 
-## call, apply, bind
+### call, apply, bind
 
 함수에 명시적으로 this를 바인딩 할 수 있다.
 
@@ -107,7 +127,7 @@ bind의 경우는 this 바인딩만 해주고 실행은 직접 해줘야 한다.
 func.bind(this, `param1`, `param2`);
 ```
 
-## arrow function
+### arrow function
 
 화살표 함수는 함수를 선언할 때 this에 바인딩할 객체가 정적으로 결정되며, 화살표 함수를 둘러싸는 렉시컬 스코프(lexical scope)의 this가 사용된다.
 
@@ -146,7 +166,7 @@ arrowObj.func(); // outer function
 funcObj.func(); // object function
 ```
 
-## new
+### new
 
 생성자 함수에서는 인스턴스 자신이된다. (class와 비슷함)
 
@@ -159,7 +179,7 @@ var Obj = function (name, age) {
 var obj = new Obj("나비", 1); // {name:"나비", age:1}
 ```
 
-## callback (서브루틴)
+### callback (서브루틴)
 
 콜백함수의 제어권을 가지는 함수(메서드)마다 다르다
 
